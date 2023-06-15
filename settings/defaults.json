@@ -1,6 +1,6 @@
 {   
-    "experiment": "Poster_lorenz",
-    "name": "test",
+    "experiment": "default",
+    "name": "default",
     "path_to_data": "ICML2023_datasets/Lorenz63/lorenz63_on0.05_train.npy",
     "path_to_inputs": "",
     "run": 1,
@@ -10,7 +10,7 @@
     "observation_model": "Identity",
     "latent_dim": 3,
     "num_bases": 50,
-    "hidden_dim": 150,
+    "hidden_dim": 50,
 
     "MAR_ratio": 0.0,
     "MAR_lambda": 0.0,
@@ -21,8 +21,8 @@
     "gradient_clipping_norm": 0.0,
     "start_lr": 1e-3,
     "end_lr": 1e-6, 
-    "batch_size": 32,
-    "sequence_length": 100,
+    "batch_size": 16,
+    "sequence_length": 200,
     "teacher_forcing_interval": 16,
     "gtf_alpha": 1.0,
     "gtf_alpha_method": "product_upper_bound",
