@@ -1,0 +1,3 @@
+whitespace_typedefs = true
+remove_extra_newlines = true
+long_to_short_function_def = true

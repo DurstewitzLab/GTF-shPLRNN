@@ -1,0 +1,43 @@
+{   
+    "experiment": "Poster_lorenz",
+    "name": "test",
+    "path_to_data": "ICML2023_datasets/Lorenz63/lorenz63_on0.05_train.npy",
+    "path_to_inputs": "",
+    "run": 1,
+    "device": "cpu",
+
+    "model": "clippedShallowPLRNN",
+    "observation_model": "Identity",
+    "latent_dim": 3,
+    "num_bases": 50,
+    "hidden_dim": 150,
+
+    "MAR_ratio": 0.0,
+    "MAR_lambda": 0.0,
+    "lat_model_regularization": 0.0,
+    "obs_model_regularization": 0.0,
+
+    "optimizer": "RADAM",
+    "gradient_clipping_norm": 0.0,
+    "start_lr": 1e-3,
+    "end_lr": 1e-6, 
+    "batch_size": 32,
+    "sequence_length": 100,
+    "teacher_forcing_interval": 16,
+    "gtf_alpha": 1.0,
+    "gtf_alpha_method": "product_upper_bound",
+    "gtf_alpha_decay": 0.999,
+    "alpha_update_interval": 5,
+    "partial_forcing": false,
+
+    "epochs": 5000,
+    "batches_per_epoch": 50,
+    "scalar_saving_interval": 25,
+    "image_saving_interval": 25,
+    "gaussian_noise_level": 0.00,
+
+    "D_stsp_bins": 30,
+    "D_stsp_scaling": 1.0,
+    "PSE_smoothing": 20.0,
+    "PE_n": 20
+}
