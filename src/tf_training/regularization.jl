@@ -1,5 +1,5 @@
 using LinearAlgebra
-using CUDA
+using Flux
 
 using ..PLRNNs
 using ..ObservationModels
@@ -47,7 +47,7 @@ Condition number regularization for the `Affine` observation model. Pulls the co
 of `B` towards 1, ensuring invertibility which is needed for proper estimation of forcing signals.
 """
 function regularize(O::Affine, λ::Float32; ϵ::Float32 = 1.0f-8)
-    S = svd(O.B).S
+    S = svd(O.B |> cpu).S
     return λ * (1.0f0 - S[1] / (S[end] + ϵ))^2
 end
 

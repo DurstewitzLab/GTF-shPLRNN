@@ -21,7 +21,12 @@ Throws an error if `est_method` is not one of the methods in `α_METHODS`.
 
 Returns `α` and spectral norm `𝒩` used to compute it.
 """
-function compute_α(tfrec, Ẑ::AbstractArray{T, 3}, est_method::String) where {T}
+function compute_α(
+    tfrec,
+    Ẑ::AbstractArray{T, 3},
+    est_method::String;
+    return_norm::Bool = false,
+) where {T}
     # model
     ℳ = tfrec.model
 
@@ -43,7 +48,7 @@ function compute_α(tfrec, Ẑ::AbstractArray{T, 3}, est_method::String) where {
             "Unknown α estimation method: $(est_method). Please choose one of $(α_METHODS).",
         )
     end
-    return α, 𝒩
+    return return_norm ? (α, 𝒩) : α
 end
 
 """

@@ -70,6 +70,7 @@ function train_!(
     λₗ = args["lat_model_regularization"]::Float32
     partial_forcing = args["partial_forcing"]::Bool
     k = args["alpha_update_interval"]::Int
+    use_gtf = args["use_gtf"]::Bool
 
     # data shape
     T, N = size(𝒟.X)
@@ -79,18 +80,29 @@ function train_!(
 
     # progress tracking
     prog = Progress(joinpath(exp, name), run, 20, E, 0.8)
-    stop_flag = false
 
     # decide on D_stsp scaling
     scal, stsp_name = decide_on_measure(σ²_scaling, bins, N)
 
     # initialize stateful model wrapper
-    tfrec = choose_recur_wrapper(m, 𝒟, O, M, N, S, τ, α)
+    tfrec = nothing
+    z₀ = similar(𝒟.X, M, S)
+    if use_gtf
+        tfrec = GTFRecur(m, O, z₀, α)
+        println(
+            "Using GTF with initial α = $α and annealing method: $α_method (γ = $γ, k = $k)",
+        )
+        println("Partial forcing set to: $partial_forcing (N = $N, M = $M)")
+    else
+        tfrec = TFRecur(m, O, z₀, τ)
+        println("Using sparse TF with τ = $τ")
+        println("Partial forcing set to: $partial_forcing (N = $N, M = $M)")
+    end
 
     # model parameters
     θ = Flux.params(tfrec)
 
-    𝒩 = 0.0f0
+    # initial α
     α_est = α
 
     for e = 1:E
@@ -108,8 +120,8 @@ function train_!(
             Ẑ = estimate_forcing_signals(tfrec, X̃)
 
             # α estimation & annealing
-            if sₑ % k == 0
-                α_est, 𝒩 = compute_α(tfrec, @view(Ẑ[:, :, 2:end]), α_method)
+            if sₑ % k == 0 && use_gtf
+                α_est = compute_α(tfrec, @view(Ẑ[:, :, 2:end]), α_method)
                 if α_est > tfrec.α
                     tfrec.α = α_est
                 else
@@ -118,7 +130,7 @@ function train_!(
             end
 
             # partial forcing
-            Ẑ_subset = partial_forcing ? @view(Ẑ[1:N, :, 2:end]) : @view(Ẑ[:, :, 2:end])
+            Ẑ_subset = @views partial_forcing ? Ẑ[1:N, :, 2:end] : Ẑ[:, :, 2:end]
 
             # forward and backward pass
             grads = Flux.gradient(θ) do
@@ -134,19 +146,15 @@ function train_!(
             Flux.Optimise.update!(opt, θ, grads)
 
             # check for NaNs in parameters (exploding gradients)
-            stop_flag = check_for_NaNs(θ)
-            if stop_flag
-                break
+            if check_for_NaNs(θ)
+                save_model(
+                    [tfrec.model, tfrec.O],
+                    joinpath(save_path, "checkpoints", "model_$e.bson"),
+                )
+                @warn "NaN(s) in parameters detected! \
+                    This is likely due to exploding gradients. Aborting training..."
+                return nothing
             end
-        end
-        if stop_flag
-            save_model(
-                [tfrec.model, tfrec.O],
-                joinpath(save_path, "checkpoints", "model_$e.bson"),
-            )
-            @warn "NaN(s) in parameters detected! \
-                This is likely due to exploding gradients. Aborting training..."
-            break
         end
         t₂ = time_ns()
         Δt = (t₂ - t₁) / 1e9
@@ -183,11 +191,12 @@ function train_!(
 
             # progress printing
             scalars = gather_scalars(Lₜᵣ, Lᵣ, D_stsp, stsp_name, pse, pe, PE_n)
-            typeof(tfrec) <: GTFRecur ? scalars["α"] = round(tfrec.α, digits=3) : nothing
-            typeof(O) <: Affine ? scalars["cond(B)"] = round(cond(O.B), digits=3) : nothing
+            typeof(tfrec) <: GTFRecur ? scalars["α"] = round(tfrec.α, digits = 3) : nothing
+            typeof(O) <: Affine ? scalars["cond(B)"] = round(cond(O.B), digits = 3) :
+            nothing
 
             print_progress(prog, Δt, scalars)
-            
+
             save_model(
                 [tfrec.model, tfrec.O],
                 joinpath(save_path, "checkpoints", "model_$e.bson"),
@@ -202,31 +211,7 @@ function train_!(
             end
         end
     end
-end
-
-function choose_recur_wrapper(
-    m,
-    𝒟::AbstractDataset,
-    O::ObservationModel,
-    M::Int,
-    N::Int,
-    S::Int,
-    τ::Int,
-    α::Float32,
-)
-    init_z = similar(𝒟.X, M, S)
-    if N ≥ M
-        println("N(=$N) ≥ M(=$M), using GTF with α = $α")
-        return GTFRecur(m, O, init_z, α)
-    else
-        if α < 1.0f0
-            println("N(=$N) < M(=$M) and α < 1 --> using GTF with α = $α")
-            return GTFRecur(m, O, init_z, α)
-        elseif α == 1.0f0
-            println("N(=$N) < M(=$M) and α = 1 --> using sparse TF with τ = $τ")
-            return TFRecur(m, O, init_z, τ)
-        end
-    end
+    return nothing
 end
 
 function regularization_loss(
@@ -255,8 +240,8 @@ function gather_scalars(Lₜᵣ, Lᵣ, D_stsp, stsp_name, pse, pe, PE_n)
         scalars["Lₜᵣ"] = Lₜᵣ
         scalars["Lᵣ"] = Lᵣ
     end
-    scalars["Dₛₜₛₚ $stsp_name"] = round(D_stsp, digits=3)
-    scalars["Dₕ"] = round(pse, digits=3)
+    scalars["Dₛₜₛₚ $stsp_name"] = round(D_stsp, digits = 3)
+    scalars["Dₕ"] = round(pse, digits = 3)
     scalars["PE($PE_n)"] = pe
     return scalars
 end

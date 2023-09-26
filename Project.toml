@@ -1,7 +1,7 @@
 name = "GTF"
 uuid = "495d47eb-7d5e-4e91-8dff-3bb7b62a9e9e"
 authors = ["Florian Hess <florian.hess@zi-mannheim.de>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
@@ -25,6 +25,7 @@ KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NPZ = "15e1cf62-19b3-5cfa-8e77-841668bca605"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"

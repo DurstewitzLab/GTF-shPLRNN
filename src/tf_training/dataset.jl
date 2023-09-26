@@ -82,8 +82,8 @@ Sample a batch of sequences of batch size `S` from time series X
 function sample_batch(D::Dataset, T̃::Int, S::Int)
     N = size(D.X, 2)
     Xs = similar(D.X, N, S, T̃ + 1)
-    Threads.@threads for i = 1:S
-        @views Xs[:, i, :] .= sample_sequence(D, T̃)'
+    for i = 1:S
+        Xs[:, i, :] .= sample_sequence(D, T̃)'
     end
     return Xs
 end
@@ -92,10 +92,10 @@ function sample_batch(D::ExternalInputsDataset, T̃::Int, S::Int)
     N, K = size(D.X, 2), size(D.S, 2)
     Xs = similar(D.X, N, S, T̃ + 1)
     Ss = similar(D.X, K, S, T̃ + 1)
-    Threads.@threads for i = 1:S
+    for i = 1:S
         X̃, S̃ = sample_sequence(D, T̃)
-        @views Xs[:, i, :] .= X̃'
-        @views Ss[:, i, :] .= S̃'
+        Xs[:, i, :] .= X̃'
+        Ss[:, i, :] .= S̃'
     end
     return Xs, Ss
 end

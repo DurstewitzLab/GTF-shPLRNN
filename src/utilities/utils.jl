@@ -35,16 +35,10 @@ function convert_to_Float32(dict::Dict)
     return dict
 end
 
-load_defaults() = load_json_f32(joinpath(pwd(), "settings", "defaults.json"))
+load_defaults() = load_json_f32(joinpath(@__DIR__, "..", "..", "settings", "defaults.json"))
 
 load_json_f32(path) = convert_to_Float32(JSON.parsefile(path))
 
 save_model(model, path::String) = @save path model = cpu(model)
 
-function check_for_NaNs(θ)
-    nan = false
-    for p in θ
-        nan = nan || !isfinite(sum(p))
-    end
-    return nan
-end
+check_for_NaNs(θ) = any(!isfinite(sum(p)) for p ∈ θ)

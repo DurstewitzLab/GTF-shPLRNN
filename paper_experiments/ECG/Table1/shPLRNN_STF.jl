@@ -36,6 +36,7 @@ args = GTF.ArgVec([
     Argument("hidden_dim", 250, "H"),
 
     # GTF
+    Argument("use_gtf", true),
     Argument("gtf_alpha", 0.0, "α"),
 
     # has no effect if method is 'constant'

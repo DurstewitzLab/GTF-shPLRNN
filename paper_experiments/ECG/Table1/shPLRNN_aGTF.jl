@@ -36,6 +36,7 @@ args = GTF.ArgVec([
     Argument("hidden_dim", 250, "H"),
 
     # GTF
+    Argument("use_gtf", true),
     Argument("gtf_alpha", 1.0),
     Argument("gtf_alpha_decay", 0.999),
     Argument("gtf_alpha_method", "product_upper_bound"),
@@ -51,8 +52,8 @@ args = GTF.ArgVec([
     Argument("batches_per_epoch", 50),
     Argument("start_lr", 1e-3),
     Argument("end_lr", 1e-6),
-    Argument("scalar_saving_interval", 500),
-    Argument("image_saving_interval", 500),
+    Argument("scalar_saving_interval", 25),
+    Argument("image_saving_interval", 25),
 
     # measures
     Argument("D_stsp_bins", 30),

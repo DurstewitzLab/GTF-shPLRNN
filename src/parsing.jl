@@ -1,5 +1,5 @@
 using ArgParse
-using Flux
+using Flux, CUDA
 
 function initialize_model(args::AbstractDict, D::AbstractDataset; mod = @__MODULE__)
     # gather args
@@ -78,8 +78,10 @@ end
 
 get_device(args::AbstractDict) =
     if args["device"] == "gpu"
+        println("Training on GPU: $(device()) -> $(name(device()))")
         return gpu
     else
+        println("Training on CPU.")
         return cpu
     end
 
@@ -132,6 +134,11 @@ function argtable()
         default = defaults["path_to_inputs"] |> String
 
         # training
+        "--use_gtf"
+        help = "Whether to use generalized teacher forcing."
+        arg_type = Bool
+        default = defaults["use_gtf"] |> Bool
+
         "--teacher_forcing_interval"
         help = "The teacher forcing interval to use."
         arg_type = Int

@@ -36,6 +36,7 @@ args = GTF.ArgVec([
     Argument("hidden_dim", 512, "H"),
 
     # GTF
+    Argument("use_gtf", true),
     Argument("gtf_alpha", 1.0),
     Argument("gtf_alpha_decay", 0.999),
     Argument("gtf_alpha_method", "arithmetic_mean"),

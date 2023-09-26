@@ -1,6 +1,6 @@
 {   
     "experiment": "default",
-    "name": "default",
+    "name": "lorenz63",
     "path_to_data": "ICML2023_datasets/Lorenz63/lorenz63_on0.05_train.npy",
     "path_to_inputs": "",
     "run": 1,
@@ -10,11 +10,11 @@
     "observation_model": "Identity",
     "latent_dim": 3,
     "num_bases": 50,
-    "hidden_dim": 50,
+    "hidden_dim": 100,
 
     "MAR_ratio": 0.0,
     "MAR_lambda": 0.0,
-    "lat_model_regularization": 0.0,
+    "lat_model_regularization": 1e-5,
     "obs_model_regularization": 0.0,
 
     "optimizer": "RADAM",
@@ -24,6 +24,7 @@
     "batch_size": 16,
     "sequence_length": 200,
     "teacher_forcing_interval": 16,
+    "use_gtf": true,
     "gtf_alpha": 1.0,
     "gtf_alpha_method": "product_upper_bound",
     "gtf_alpha_decay": 0.999,
