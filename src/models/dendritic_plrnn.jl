@@ -1,6 +1,5 @@
 using Flux: @functor
 using Tullio
-using CUDA, CUDAKernels, KernelAbstractions
 
 # abstract type
 abstract type AbstractDendriticPLRNN <: AbstractPLRNN end
@@ -55,15 +54,41 @@ end
 
 Φ(m::dendPLRNN, z::AbstractVecOrMat) = basis_expansion(z, m.α, m.H)
 
-basis_expansion(z::AbstractMatrix, α::AbstractVector, H::AbstractMatrix) =
+basis_expansion(z::Matrix{T}, α::Vector{T}, H::Matrix{T}) where {T} =
     @tullio z̃[m, s] := α[b] * relu(z[m, s] - H[m, b])
 
-basis_expansion(z::AbstractVector, α::AbstractVector, H::AbstractMatrix) =
+basis_expansion(z::Vector{T}, α::Vector{T}, H::Matrix{T}) where {T} =
     @tullio z̃[m] := α[b] * relu(z[m] - H[m, b])
 
-function jacobian(m::dendPLRNN, z::AbstractVector)
-    @tullio ∂Φ_∂z[m, m] := m.α[b] * (z[m] > m.H[m, b])
-    return Diagonal(m.A) + m.W * ∂Φ_∂z
+function basis_expansion(
+    z::AbstractMatrix{T},
+    α::AbstractVector{T},
+    H::AbstractMatrix{T},
+) where {T}
+    M = size(z, 1)
+    α_ = reshape(α, 1, 1, :)
+    H_ = reshape(H, M, 1, :)
+    z_ = reshape(z, M, :, 1)
+    z̃ = sum(α_ .* relu.(z_ .- H_), dims = 3)
+    return reshape(z̃, M, :)
+end
+
+function basis_expansion(
+    z::AbstractVector{T},
+    α::AbstractVector{T},
+    H::AbstractMatrix{T},
+) where {T}
+    α_ = reshape(α, 1, :)
+    z_ = reshape(z, :, 1)
+    z̃ = sum(α_ .* relu.(z_ .- H), dims = 2)
+    return reshape(z̃, :)
+end
+
+function jacobian(m::dendPLRNN, z::AbstractVector{T}) where {T}
+    α_ = reshape(m.α, 1, :)
+    z_ = reshape(z, :, 1)
+    ∂Φ∂z = Diagonal(vec(sum(α_ .* (z_ .> m.H), dims = 2)))
+    return Diagonal(m.A) + m.W * ∂Φ∂z
 end
 
 """
@@ -115,13 +140,39 @@ end
 
 Φ(m::clippedDendPLRNN, z::AbstractVecOrMat) = clipping_basis_expansion(z, m.α, m.H)
 
-clipping_basis_expansion(z::AbstractMatrix, α::AbstractVector, H::AbstractMatrix) =
+clipping_basis_expansion(z::Matrix{T}, α::Vector{T}, H::Matrix{T}) where {T} =
     @tullio z̃[m, s] := α[b] * (relu(z[m, s] - H[m, b]) - relu(z[m, s]))
 
-clipping_basis_expansion(z::AbstractVector, α::AbstractVector, H::AbstractMatrix) =
+clipping_basis_expansion(z::Vector{T}, α::Vector{T}, H::Matrix{T}) where {T} =
     @tullio z̃[m] := α[b] * (relu(z[m] - H[m, b]) - relu(z[m]))
 
-function jacobian(m::clippedDendPLRNN, z::AbstractVector)
-    @tullio ∂Φ_∂z[m, m] := m.α[b] * ((z[m] > m.H[m, b]) - (z[m] > 0))
-    return Diagonal(m.A) + m.W * ∂Φ_∂z
+function clipping_basis_expansion(
+    z::AbstractMatrix{T},
+    α::AbstractVector{T},
+    H::AbstractMatrix{T},
+) where {T}
+    M = size(z, 1)
+    α_ = reshape(α, 1, 1, :)
+    H_ = reshape(H, M, 1, :)
+    z_ = reshape(z, M, :, 1)
+    z̃ = sum(α_ .* (relu.(z_ .- H_) .- relu.(z_)), dims = 3)
+    return reshape(z̃, M, :)
+end
+
+function clipping_basis_expansion(
+    z::AbstractVector{T},
+    α::AbstractVector{T},
+    H::AbstractMatrix{T},
+) where {T}
+    α_ = reshape(α, 1, :)
+    z_ = reshape(z, :, 1)
+    z̃ = sum(α_ .* (relu.(z_ .- H) .- relu.(z_)), dims = 2)
+    return reshape(z̃, :)
+end
+
+function jacobian(m::clippedDendPLRNN, z::AbstractVector{T}) where {T}
+    α_ = reshape(m.α, 1, :)
+    z_ = reshape(z, :, 1)
+    ∂Φ∂z = Diagonal(vec(sum(α_ .* ((z_ .> m.H) .- (z_ .> 0)), dims = 2)))
+    return Diagonal(m.A) + m.W * ∂Φ∂z
 end

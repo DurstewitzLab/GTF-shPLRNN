@@ -68,3 +68,48 @@ end
         @test Jᴬᴰ ≈ J
     end
 end
+
+@testset "ext/GTFDynSysExt/shallowPLRNN.jl" begin
+    using DynamicalSystems
+    
+    # shallowPLRNN
+    begin 
+        shplrnn = shallowPLRNN(3, 10)
+        z₁ = randn(Float32, 3)
+
+        shplrnn_ds = wrap_as_dynamical_system(shplrnn, z₁)
+
+        Z = generate(shplrnn, z₁, 1001)
+        Z_ds = Matrix{Float32}(trajectory(shplrnn_ds, 1000)[1])
+
+        @test Z ≈ Z_ds
+        
+        # check jacobian
+        J_out = similar(z₁, 3, 3)
+        p = current_parameters(shplrnn_ds)
+        shplrnn_ds.J(J_out, z₁, p, 0)
+
+        @test jacobian(shplrnn, z₁) ≈ J_out
+    end
+
+    # clippedShallowPLRNN
+    begin 
+        clipped_shplrnn = clippedShallowPLRNN(3, 10)
+        z₁ = randn(Float32, 3)
+
+        clipped_shplrnn_ds = wrap_as_dynamical_system(clipped_shplrnn, z₁)
+
+        Z = generate(clipped_shplrnn, z₁, 1001)
+        Z_ds = Matrix{Float32}(trajectory(clipped_shplrnn_ds, 1000)[1])
+
+        @test Z ≈ Z_ds
+        
+        # check jacobian
+        J_out = similar(z₁, 3, 3)
+        p = current_parameters(clipped_shplrnn_ds)
+        clipped_shplrnn_ds.J(J_out, z₁, p, 0)
+
+        @test jacobian(clipped_shplrnn, z₁) ≈ J_out
+    end
+
+end

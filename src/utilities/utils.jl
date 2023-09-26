@@ -42,3 +42,6 @@ load_json_f32(path) = convert_to_Float32(JSON.parsefile(path))
 save_model(model, path::String) = @save path model = cpu(model)
 
 check_for_NaNs(θ) = any(!isfinite(sum(p)) for p ∈ θ)
+
+wrap_as_dynamical_system(rnn, z₁ = nothing) =
+    error("There is no wrapper for $(typeof(rnn)) or DynamicalSystems.jl has not been added as a package yet!")

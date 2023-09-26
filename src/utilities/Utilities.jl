@@ -21,7 +21,8 @@ export Maybe,
     load_model,
     format_run_ID,
     check_for_NaNs,
-    plot_reconstruction
+    plot_reconstruction,
+    wrap_as_dynamical_system
 
 include("helpers.jl")
 include("utils.jl")
