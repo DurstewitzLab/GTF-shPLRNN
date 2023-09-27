@@ -2,7 +2,7 @@ using GTF, Flux, LinearAlgebra
 using DynamicalSystems: DeterministicIteratedMap, TangentDynamicalSystem
 
 function GTF.Utilities.wrap_as_dynamical_system(model::PLRNN, z₁ = nothing)
-    !isnothing(model.C) && throw("Non-autonomous shallowPLRNNs are not supported.")
+    non_autonomous_error(model)
 
     # params
     A, W, h = cast_params_to_float64(Flux.params(model))
@@ -28,7 +28,7 @@ function PLRNN_jacobian!(out, z, p, n)
 end
 
 function GTF.Utilities.wrap_as_dynamical_system(model::mcPLRNN, z₁ = nothing)
-    !isnothing(model.C) && throw("Non-autonomous shallowPLRNNs are not supported.")
+    non_autonomous_error(model)
 
     # params
     A, W, h = cast_params_to_float64(Flux.params(model))
