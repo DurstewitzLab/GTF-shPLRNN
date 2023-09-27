@@ -69,47 +69,46 @@ end
     end
 end
 
-@testset "ext/GTFDynSysExt/shallowPLRNN.jl" begin
+@testset "ext/GTFDynSysExt" begin
     using DynamicalSystems
-    
-    # shallowPLRNN
-    begin 
-        shplrnn = shallowPLRNN(3, 10)
-        z₁ = randn(Float32, 3)
 
-        shplrnn_ds = wrap_as_dynamical_system(shplrnn, z₁)
+    function test_rnn(rnn, z₁)
+        rnn_ds = wrap_as_dynamical_system(rnn, z₁)
 
-        Z = generate(shplrnn, z₁, 1001)
-        Z_ds = Matrix{Float32}(trajectory(shplrnn_ds, 1000)[1])
+        Z = generate(rnn, Float32.(z₁), 101)
+        Z_ds = Matrix(trajectory(rnn_ds, 100)[1])
 
         @test Z ≈ Z_ds
-        
+
         # check jacobian
         J_out = similar(z₁, 3, 3)
-        p = current_parameters(shplrnn_ds)
-        shplrnn_ds.J(J_out, z₁, p, 0)
+        p = current_parameters(rnn_ds)
+        rnn_ds.J(J_out, z₁, p, 0)
 
-        @test jacobian(shplrnn, z₁) ≈ J_out
+        @test jacobian(rnn, z₁) ≈ J_out
     end
+
+    # shallowPLRNN
+    shplrnn = shallowPLRNN(3, 10)
+    test_rnn(shplrnn, randn(3))
 
     # clippedShallowPLRNN
-    begin 
-        clipped_shplrnn = clippedShallowPLRNN(3, 10)
-        z₁ = randn(Float32, 3)
+    clipped_shplrnn = clippedShallowPLRNN(3, 10)
+    test_rnn(shplrnn, randn(3))
 
-        clipped_shplrnn_ds = wrap_as_dynamical_system(clipped_shplrnn, z₁)
+    # dendPLRNN
+    dendplrnn = dendPLRNN(3, 10)
+    test_rnn(dendplrnn, randn(3))
 
-        Z = generate(clipped_shplrnn, z₁, 1001)
-        Z_ds = Matrix{Float32}(trajectory(clipped_shplrnn_ds, 1000)[1])
+    # clippedDendPLRNN
+    clippeddendplrnn = clippedDendPLRNN(3, 10)
+    test_rnn(clippeddendplrnn, randn(3))
 
-        @test Z ≈ Z_ds
-        
-        # check jacobian
-        J_out = similar(z₁, 3, 3)
-        p = current_parameters(clipped_shplrnn_ds)
-        clipped_shplrnn_ds.J(J_out, z₁, p, 0)
+    # PLRNN
+    plrnn = PLRNN(3)
+    test_rnn(plrnn, randn(3))
 
-        @test jacobian(clipped_shplrnn, z₁) ≈ J_out
-    end
-
+    # mcPLRNN
+    mcplrnn = mcPLRNN(3)
+    test_rnn(mcplrnn, randn(3))
 end

@@ -97,6 +97,17 @@ Data for the code is expected to be a single trajectory in form of a $T \times N
 ### 2.7 GPU support
 To train on a GPU, the `device` argument has to be set to `"gpu"`. However, training using aGTF + GPU is currently not supported/optimized. Also, no dispatch to different GPU devices is implemented in case of grid searching many experiments in parallel (i.e. only multiple runs on a single GPU are supported currently). 
 
+### 2.8 DynamicalSystems.jl integration
+We also supply a wrapper for our models, which enables the use of [DynamicalSystems.jl](https://juliadynamics.github.io/DynamicalSystems.jl/stable/) to e.g. computing the Lyapunov spectrum:
+```julia
+using GTF, DynamicalSystems
+
+rnn = clippedShallowPLRNN(3, 100)
+rnn_ds = wrap_as_dynamical_system(rnn)
+
+λs = lyapunovspectrum(rnn_ds, 100_000)
+```
+
 ## Citation
 If you find the repository and/or paper helpful for your own research, please cite [our work](https://proceedings.mlr.press/v202/hess23a.html).
 ```

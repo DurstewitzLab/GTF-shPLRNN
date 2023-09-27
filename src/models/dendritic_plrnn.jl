@@ -1,5 +1,5 @@
 using Flux: @functor
-using Tullio
+using CUDA
 
 # abstract type
 abstract type AbstractDendriticPLRNN <: AbstractPLRNN end
@@ -53,12 +53,6 @@ function dendPLRNN(M::Int, B::Int, X::AbstractMatrix, K::Int)
 end
 
 Φ(m::dendPLRNN, z::AbstractVecOrMat) = basis_expansion(z, m.α, m.H)
-
-basis_expansion(z::Matrix{T}, α::Vector{T}, H::Matrix{T}) where {T} =
-    @tullio z̃[m, s] := α[b] * relu(z[m, s] - H[m, b])
-
-basis_expansion(z::Vector{T}, α::Vector{T}, H::Matrix{T}) where {T} =
-    @tullio z̃[m] := α[b] * relu(z[m] - H[m, b])
 
 function basis_expansion(
     z::AbstractMatrix{T},
@@ -139,12 +133,6 @@ function clippedDendPLRNN(M::Int, B::Int, X::AbstractMatrix, K::Int)
 end
 
 Φ(m::clippedDendPLRNN, z::AbstractVecOrMat) = clipping_basis_expansion(z, m.α, m.H)
-
-clipping_basis_expansion(z::Matrix{T}, α::Vector{T}, H::Matrix{T}) where {T} =
-    @tullio z̃[m, s] := α[b] * (relu(z[m, s] - H[m, b]) - relu(z[m, s]))
-
-clipping_basis_expansion(z::Vector{T}, α::Vector{T}, H::Matrix{T}) where {T} =
-    @tullio z̃[m] := α[b] * (relu(z[m] - H[m, b]) - relu(z[m]))
 
 function clipping_basis_expansion(
     z::AbstractMatrix{T},

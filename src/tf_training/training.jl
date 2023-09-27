@@ -85,7 +85,6 @@ function train_!(
     scal, stsp_name = decide_on_measure(σ²_scaling, bins, N)
 
     # initialize stateful model wrapper
-    tfrec = nothing
     z₀ = similar(𝒟.X, M, S)
     if use_gtf
         tfrec = GTFRecur(m, O, z₀, α)
@@ -130,7 +129,7 @@ function train_!(
             end
 
             # partial forcing
-            Ẑ_subset = @views partial_forcing ? Ẑ[1:N, :, 2:end] : Ẑ[:, :, 2:end]
+            @views Ẑ_subset = partial_forcing ? Ẑ[1:N, :, 2:end] : Ẑ[:, :, 2:end]
 
             # forward and backward pass
             grads = Flux.gradient(θ) do

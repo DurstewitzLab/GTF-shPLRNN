@@ -1,19 +1,17 @@
 using GTF, Flux, LinearAlgebra
 using DynamicalSystems: DeterministicIteratedMap, TangentDynamicalSystem
 
-function GTF.Utilities.wrap_as_dynamical_system(model::clippedShallowPLRNN, z₁ = nothing)
-    A, W₁, W₂, h₁, h₂ = Flux.params(model)
-    fp_type = eltype(A)
+function GTF.Utilities.wrap_as_dynamical_system(model::shallowPLRNN, z₁ = nothing)
+    !isnothing(model.C) && throw("Non-autonomous shallowPLRNNs are not supported.")
 
-    z = z₁
-    if isnothing(z₁)
-        z = zeros(fp_type, length(A))
-    else
-        z = fp_type.(z₁)
-    end
+    # params
+    A, W₁, W₂, h₁, h₂ = cast_params_to_float64(Flux.params(model))
 
-    ds = DeterministicIteratedMap(clippedShallowPLRNN_step!, z, (A, W₁, W₂, h₁, h₂))
-    return TangentDynamicalSystem(ds, J = clippedShallowPLRNN_jacobian!)
+    # initial state
+    z = isnothing(z₁) ? zeros(length(A)) : Float64.(z₁)
+
+    ds = DeterministicIteratedMap(shallowPLRNN_step!, z, (A, W₁, W₂, h₁, h₂))
+    return TangentDynamicalSystem(ds, J = shallowPLRNN_jacobian!)
 end
 
 # step & jacobian for DynamicalSystems.jl support
@@ -31,19 +29,17 @@ function clippedShallowPLRNN_jacobian!(out, z, p, n)
     return nothing
 end
 
-function GTF.Utilities.wrap_as_dynamical_system(model::shallowPLRNN, z₁ = nothing)
-    A, W₁, W₂, h₁, h₂ = Flux.params(model)
-    fp_type = eltype(A)
+function GTF.Utilities.wrap_as_dynamical_system(model::clippedShallowPLRNN, z₁ = nothing)
+    !isnothing(model.C) && throw("Non-autonomous clippedShallowPLRNNs are not supported.")
 
-    z = z₁
-    if isnothing(z₁)
-        z = zeros(fp_type, length(A))
-    else
-        z = fp_type.(z₁)
-    end
+    # params
+    A, W₁, W₂, h₁, h₂ = cast_params_to_float64(Flux.params(model))
 
-    ds = DeterministicIteratedMap(shallowPLRNN_step!, z, (A, W₁, W₂, h₁, h₂))
-    return TangentDynamicalSystem(ds, J = shallowPLRNN_jacobian!)
+    # initial state
+    z = isnothing(z₁) ? zeros(length(A)) : Float64.(z₁)
+
+    ds = DeterministicIteratedMap(clippedShallowPLRNN_step!, z, (A, W₁, W₂, h₁, h₂))
+    return TangentDynamicalSystem(ds, J = clippedShallowPLRNN_jacobian!)
 end
 
 # step & jacobian for DynamicalSystems.jl support

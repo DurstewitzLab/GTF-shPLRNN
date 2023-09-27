@@ -1,7 +1,7 @@
 name = "GTF"
 uuid = "495d47eb-7d5e-4e91-8dff-3bb7b62a9e9e"
 authors = ["Florian Hess <florian.hess@zi-mannheim.de>"]
-version = "0.3.0"
+version = "0.4.0"
 
 [deps]
 ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
@@ -30,7 +30,6 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 ThreadsX = "ac1d9e8a-700a-412c-b207-f0111f4b6c0d"
 Tullio = "bc48ee85-29a4-5162-ae0b-a64e1601d4bc"
-Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 cuDNN = "02a925ec-e4fe-4b08-9a7e-0d78e3d38ccd"
 
 [weakdeps]
